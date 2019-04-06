@@ -35,6 +35,10 @@ slots:
     type: unfeaturized
   location:
     type: unfeaturized
+  symptom:
+    type: unfeaturized
+  specialty:
+    type: unfeaturized
 
 forms:
 - facility_form
@@ -67,6 +71,7 @@ actions:
 - utter_telljoke
 - utter_ask_whatismyname
 - utter_howwereyoubuilt
+- utter_icanhelpu
 
 templates:
   utter_greet:
@@ -142,3 +147,5 @@ templates:
   - text: "I'm great! Thanks for asking."
   - text: "I'm good, thanks!"
   - text: "A little bit too warm, otherwise fine."
+  utter_icanhelpu:
+  - text: "Ok. I can help you find someone for that"

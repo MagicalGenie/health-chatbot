@@ -41,15 +41,21 @@
     - utter_address
        
 ## happy_path2
-* search_provider{"location": "Austin", "facility_type": "rbry-mqwu"}
-    - find_facility_types
-* inform{"facility_type": "rbry-mqwu"}
+* search_provider
     - facility_form
     - form{"name": "facility_form"}
     - form{"name": null}
     - find_facilities
-* inform{"facility_id": "450871"}
+* inform
     - find_healthcare_address
     - utter_address
+* thankyou
+    - utter_noworries
+
+## triage
+* symptom
+    - action_triage
+    - utter_icanhelpu
+    - find_facilities
 * thankyou
     - utter_noworries

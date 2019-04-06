@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
@@ -14,13 +13,6 @@ from rasa_core_sdk import Action
 from rasa_core_sdk import ActionExecutionRejection
 from rasa_core_sdk.events import SlotSet, FollowupAction
 from rasa_core_sdk.forms import FormAction, REQUESTED_SLOT
-
-# We use the medicore.gov database to find information about 3 different
-# healthcare facility types, given a city name, zip code or facility ID
-# the identifiers for each facility type is given by the medicare database
-# rbry-mqwu is for hospitals
-# b27b-2uc7 is for nursing homes
-# 9wzi-peqs is for home health agencies
 
 ENDPOINTS = {
     "base": "https://data.medicare.gov/resource/{}.json",
@@ -69,7 +61,6 @@ FACILITY_TYPES = {
             "resource": "c8qv-268j"
         }
 }
-
 
 class FindFacilityTypes(Action):
 
@@ -186,9 +177,13 @@ class FindFacilities(Action):
                 {"title": "{}".format(name.title()), "payload": payload})
 
         # limit number of buttons to 3 here for clear presentation purpose
+        if "near" in location:
+            location = "you"
+            
         dispatcher.utter_button_message(
-            "Here is a list of {} {}s near you".format(len(buttons[:3]),
-                                                       button_name),
+            "Here is a list of {} {}s near {}".format(len(buttons[:3]),
+                                                       button_name,
+                                                       location),
             buttons[:3], button_type="custom")
         # todo: note: button options are not working BUG in rasa_core
 
@@ -333,3 +328,29 @@ class ActionChitchat(Action):
             dispatcher.utter_template('utter_' + intent, tracker)
 
         return []
+
+
+def get_ts_host():
+    host = "http://tensorsearch.dev.aetnadigital.net/"
+    res = requests.get(host + healthcheck)
+    if res.status_code == 200:
+        host += "tensorsearch"
+        return host
+    else:
+        return "http://localhost:5000/tensorsearch"
+
+def triage_request(search_term): 
+    return {"search_terms": [search_term]}
+
+class ActionTriage(Action):
+    def name(self):
+        return "action_triage"
+
+    def run(self, dispatcher, tracker, domain):
+        symptom = tracker.get_slot('symptom')
+        host = get_ts_host()
+        print(host)
+        res = requests.post(host, json=triage_request(symptom))
+        specialty = json.loads(res.json())[search_term][0][0]
+        # include code to include specialty slot
+        return [FollowupAction('find_facilities')]

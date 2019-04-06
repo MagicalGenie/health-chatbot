@@ -339,7 +339,6 @@
 - Good morning i need a [doctor](facility_type) in [nearby](location)
 - Good morning i need a [hospital](facility_type) in [nearby](location)
 
-
 ## intent:thankyou
 - Thanks
 - Thank you
@@ -356,7 +355,6 @@
 - amazing, thanks
 - cool, thanks
 - cool thank you
-
 
 ##intent:ask_howdoing
 - Ahoy matey how are you?
@@ -1419,10 +1417,53 @@
 - It is indeed a pleasure to be able to meet you.
 - nice to meet you
 
+## intent:symptom
+- [stomach pain](symptom)
+- [migraine](symptom)
+- [sick](symptom)
+- [light headed](symptom)
+- [broken arm](symptom)
+- [broken leg](symptom)
+- [scar](symptom)
+- [cold](symptom)
+- [cough](symptom)
+- [chills](symptom)
+- [migraine](symptom)
+- [fever](symptom)
+- [headache](symptom)
+- [stomach ache](symptom)
+- [ache](symptom)
+- [tired](symptom)
+- [out of breath](symptom)
+- [broken](symptom)
+- [vomit](symptom)
+- [nausea](symptom)
+- [blood](symptom)
+- [bleeding](symptom)
+- I feel [sick](symptom)
+- I feel [nauseus](symptom)
+- I am [vomiting](symptom)
+- I am [bleeding](symptom)
+- I feel [light headed](symptom)
+- I have a [broken arm](symptom)
+- I have a [broken leg](symptom)
+- I have a [scar](symptom)
+- I have a [cold](symptom)
+- I have a [cough](symptom)
+- I have [chills](symptom)
+- I have a [migraine](symptom)
+- I have a [fever](symptom)
+- I have a [headache](symptom)
+- I have a [stomach ache](symptom)
+- I have an [ache](symptom)
+- I feel [tired](symptom)
+- I feel [out of breath](symptom)
 
 ## synonym:rbry-mqwu
 - hospital
 - hospitals
+- er
+- emergency room
 
 ## synonym:9wzi-peqs
 - home health agency
@@ -1443,9 +1484,16 @@
 - endocrinologist
 - urologist
 - radiologist
+- internist
+- internal doctor
+- internal medicine doctor
+- general practice
+- family doctor
+- general doctor
 
 ## regex:location
 - [0-9]{5}
 - San[^\s]*
 - Los[^\s]*
 - Las[^\s]*
+
