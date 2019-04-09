@@ -338,6 +338,10 @@
 - Good morning i need a [hospital](facility_type) in [near me](location)
 - Good morning i need a [doctor](facility_type) in [nearby](location)
 - Good morning i need a [hospital](facility_type) in [nearby](location)
+- [doctor](facility_type) in [Fairfax](location)
+- [doctors](facility_type) in [Denver](location)
+- [hospitals](facility_type) in [Hartford](location)
+- [hospital](facility_type) [nearby](location)
 
 ## intent:thankyou
 - Thanks
@@ -1458,6 +1462,27 @@
 - I have an [ache](symptom)
 - I feel [tired](symptom)
 - I feel [out of breath](symptom)
+
+## member_info
+- show me my info
+- member info
+- info
+- member card
+- member id
+- show me my membership info
+- show me my member info
+- show me my membership information
+- show me my account information
+- show me my account info
+- show me my id card
+- show me my member id card
+- show me my member id
+- membership info
+- membership id
+- membership card
+- show me my membership id
+- show me my membership id card
+- show me my information
 
 ## synonym:rbry-mqwu
 - hospital

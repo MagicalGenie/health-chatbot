@@ -9,10 +9,12 @@ from rasa_core_sdk.executor import CollectingDispatcher
 from typing import Dict, Text, Any, List
 
 import requests
+import json
 from rasa_core_sdk import Action
 from rasa_core_sdk import ActionExecutionRejection
 from rasa_core_sdk.events import SlotSet, FollowupAction
 from rasa_core_sdk.forms import FormAction, REQUESTED_SLOT
+import re
 
 ENDPOINTS = {
     "base": "https://data.medicare.gov/resource/{}.json",
@@ -34,7 +36,8 @@ ENDPOINTS = {
     "c8qv-268j": {
         "city_query": "?cty={}",
         "zip_code_query": "?where=zip like '{}%25'",
-        "id_query": "?ind_enrl_id={}"
+        "id_query": "?ind_enrl_id={}",
+        "specialty_query": "?pri_spec={}"
     }
 }
 
@@ -89,7 +92,7 @@ class FindFacilityTypes(Action):
 
 
 def _create_path(base: Text, resource: Text,
-                 query: Text, values: Text) -> Text:
+                 query: Text, values) -> Text:
     '''Creates a path to find provider using the endpoints.'''
 
     if isinstance(values, list):
@@ -129,6 +132,10 @@ def _resolve_name(facility_types, resource) ->Text:
             return value.get("name")
     return ""
 
+def phone_format(phone_number):
+    clean_phone_number = re.sub('[^0-9]+', '', phone_number)
+    formatted_phone_number = re.sub("(\d)(?=(\d{3})+(?!\d))", r"\1-", "%d" % int(clean_phone_number[:-1])) + clean_phone_number[-1]
+    return formatted_phone_number
 
 class FindFacilities(Action):
     '''This action class retrieves a list of all facilities matching
@@ -223,9 +230,12 @@ class FindHealthCareAddress(Action):
             adr = selected["adr_ln_1"].title()
             if "adr_ln_2" in selected.keys():
                 adr += " {}".format(selected["adr_ln_2"].title())
-            address = "{}, {}, {}".format(adr,
+            address = "{}, {}, {} {}\n Call {} to set up an appointment".format(adr,
+                                          selected["cty"].title(),
+                                          selected["st"],
                                           selected["zip"][:5].title(),
-                                          selected["cty"].title())
+                                          phone_format(selected["phn_numbr"])
+                                          )
         else:
             address = "{}, {}, {}".format(selected["address"].title(),
                                           selected["zip"].title(),
@@ -331,16 +341,88 @@ class ActionChitchat(Action):
 
 
 def get_ts_host():
-    host = "http://tensorsearch.dev.aetnadigital.net/"
-    res = requests.get(host + healthcheck)
-    if res.status_code == 200:
-        host += "tensorsearch"
-        return host
-    else:
-        return "http://localhost:5000/tensorsearch"
+    # host = "http://tensorsearch.dev.aetnadigital.net/"
+    # try:
+    #     res = requests.get(host + "healthcheck")
+    # except ConnectionError:
+    #     print("Unable to connect to DEV env. Defaulting to local runtime.")
+    # if res.status_code == 200:
+    #     host += "tensorsearch"
+    #     return host
+    # else:
+    return "http://localhost:5000/tensorsearch"
 
 def triage_request(search_term): 
     return {"search_terms": [search_term]}
+
+def _find_specialties(location: Text, specialty: Text, resource: Text) -> List[Dict]:
+    '''Returns json of facilities matching the search criteria.'''
+    values = []
+    values.append(specialty)
+    if str.isdigit(location):
+        values.insert(0, location)
+        full_path = _create_path(ENDPOINTS["base"], resource,
+                                 ENDPOINTS[resource]["zip_code_query"] + ENDPOINTS[resource]["specialty_query"],
+                                 values)
+    elif "near" in location:
+        location = get_nearby_location()
+        values.insert(0, location.upper())
+        full_path = _create_path(ENDPOINTS["base"], resource,
+                                 ENDPOINTS[resource]["city_query"] + ENDPOINTS[resource]["specialty_query"],
+                                 values)
+    else:
+        values.insert(0, location)
+        full_path = _create_path(ENDPOINTS["base"], resource,
+                                 ENDPOINTS[resource]["city_query"]  + ENDPOINTS[resource]["specialty_query"],
+                                 values)
+
+    results = requests.get(full_path).json()
+    return results
+
+class FindSpecialtyDoctor(Action):
+
+    def name(self) -> Text:
+        return "find_specialty_doctor"
+
+    def run(self,
+            dispatcher: CollectingDispatcher,
+            tracker: Tracker,
+            domain: Dict[Text, Any]) -> List:
+
+        location = tracker.get_slot('location')
+        facility_type = tracker.get_slot('facility_type')
+        specialty = tracker.get_slot('specialty')
+
+        results = _find_specialties(location, facility_type)
+        button_name = _resolve_name(FACILITY_TYPES, facility_type)
+        if len(results) == 0:
+            dispatcher.utter_message(
+                "Sorry, we could not find a {} in {}.".format(button_name,
+                                                              location))
+            return []
+
+        buttons = []
+        print("found {} facilities".format(len(results)))
+        for r in results:
+            facility_id = r["ind_enrl_id"]
+            name = "{} {}".format(r["frst_nm"], r["lst_nm"])
+
+            payload = "/inform{\"facility_id\":\"" + facility_id + "\"}"
+            buttons.append(
+                {"title": "{}".format(name.title()), "payload": payload})
+
+        # limit number of buttons to 3 here for clear presentation purpose
+        if "near" in location:
+            location = "you"
+            
+        dispatcher.utter_button_message(
+            "Here is a list of {} {}s near {}".format(len(buttons[:3]),
+                                                       button_name,
+                                                       location),
+            buttons[:3], button_type="custom")
+        # todo: note: button options are not working BUG in rasa_core
+
+        return []
 
 class ActionTriage(Action):
     def name(self):
@@ -349,8 +431,12 @@ class ActionTriage(Action):
     def run(self, dispatcher, tracker, domain):
         symptom = tracker.get_slot('symptom')
         host = get_ts_host()
-        print(host)
         res = requests.post(host, json=triage_request(symptom))
-        specialty = json.loads(res.json())[search_term][0][0]
+        specialty = json.loads(res.json())[symptom][0][0]
         # include code to include specialty slot
-        return [FollowupAction('find_facilities')]
+        print(specialty)
+        return [SlotSet("specialty", specialty),
+                SlotSet("location", "nearby"),
+                SlotSet("facility_type", "c8qv-268j"),
+                FollowupAction('find_facilities')
+                ]

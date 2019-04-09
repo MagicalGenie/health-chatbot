@@ -21,6 +21,8 @@ intents:
 - telljoke
 - ask_whatismyname
 - howwereyoubuilt
+- member_info
+- symptom
 
 entities:
 - facility_type
@@ -72,6 +74,9 @@ actions:
 - utter_ask_whatismyname
 - utter_howwereyoubuilt
 - utter_icanhelpu
+- utter_default
+- utter_member_info
+- action_triage
 
 templates:
   utter_greet:
@@ -89,7 +94,7 @@ templates:
   - text: "You are welcome!"
 
   utter_ask_facility_type:
-  - text: "Choose one of the following Hospital, Nursing home or Home Health Agency."
+  - text: "Choose one of the following Doctor, Hospital, Nursing home or Home Health Agency."
 
   utter_ask_location:
   - text: "Please provide your city name."
@@ -148,4 +153,11 @@ templates:
   - text: "I'm good, thanks!"
   - text: "A little bit too warm, otherwise fine."
   utter_icanhelpu:
-  - text: "Ok. I can help you find someone for that"
+  - text: "Ok. I can help you find someone for that. Give me a minute"
+  utter_default:
+  - text: "I'm sorry. I don't understand."
+  utter_member_info:
+  - text: "Here is your info \n
+           Name: Suzy Q\n
+           MemberID: 123456ABCXYZ\n
+           PCP: Daffy Duck MD"

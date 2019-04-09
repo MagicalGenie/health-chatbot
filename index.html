@@ -1,18 +1,42 @@
 <head>
-  <link rel="stylesheet" href="https://npm-scalableminds.s3.eu-central-1.amazonaws.com/@scalableminds/chatroom@master/dist/Chatroom.css" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <link rel="stylesheet"
+    href="https://npm-scalableminds.s3.eu-central-1.amazonaws.com/@scalableminds/chatroom@master/dist/Chatroom.css" />
+  <link rel="stylesheet" href="./index.css" />
 </head>
+
 <body>
   <div class="chat-container"></div>
-
-  <script src="https://npm-scalableminds.s3.eu-central-1.amazonaws.com/@scalableminds/chatroom@master/dist/Chatroom.js"/></script>
+  <div style="text-align: center;">
+    <button class="chat-demo-button" id="clear-button">Clear</button>
+  </div>
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+  <script
+    src="https://npm-scalableminds.s3.eu-central-1.amazonaws.com/@scalableminds/chatroom@master/dist/Chatroom.js" />
+  </script>
   <script type="text/javascript">
-    var chatroom = window.Chatroom({
-      host: "http://localhost:5005",
+    window.chatroom = new window.Chatroom({
+      host: "https://050ce451.ngrok.io",
       title: "Chat with Aetna Health Provider finder",
-      message: "Hello! I can help you find hospitals or doctors near you. I can also recommend where you could go based on your symptoms!",
+      welcomeMessage: "Hello! I can help you find hospitals or doctors near you. I can also recommend where you could go based on your symptoms!",
       container: document.querySelector(".chat-container"),
       speechRecognition: "en-US"
     });
-    chatroom.openChat();
+    window.chatroom.openChat();
+
+
+    function uuidv4() {
+      return "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g, function (c) {
+        var r = (Math.random() * 16) | 0,
+          v = c == "x" ? r : (r & 0x3) | 0x8;
+        return v.toString(16);
+      });
+    }
+
+    function clearDemo() {
+      window.chatroom.ref.props.userId = uuidv4()
+    }
+    
+    document.getElementById("clear-button").addEventListener("click", clearDemo, false);
   </script>
 </body>
