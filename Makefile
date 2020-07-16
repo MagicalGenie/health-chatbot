@@ -42,7 +42,7 @@ cmdline:
 	python3 -m rasa_core.run -d models/current/dialogue -u models/current/nlu --endpoints endpoints.yml
 
 action-server:
-	python3 -m rasa_core_sdk.endpoint --actions actions
+	python3 -m rasa_core_sdk.endpoint --actions actions --cors "*"
 
 run-cmdline:
 	python3 -m rasa_core.run -d models/current/dialogue -u models/current/nlu --debug --endpoints endpoints.yml
@@ -52,7 +52,8 @@ webchat:
   --core models/current/dialogue  \
   --nlu models/current/nlu  \
   --endpoints endpoints.yml \
-  --credentials credentials.yml
+  --credentials credentials.yml \
+  --cors "*"
 
 webserver:
 	python3 -m http.server
